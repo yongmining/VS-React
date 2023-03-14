@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<style>
+    .poke {
+        border: 1px solid black;
+        width: 400px;
+        display: inline-block;
+        margin: 10px;
+        padding: 20px;
+    }
+
+    .poke>img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .poke>* {
+        display: inline-block;
+        font-size: 1.5em;
+    }
+</style>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+        const { useState, useEffect } = React
+
+        function Item({ poke }) {
+            const [img, setImg] = useState('');
+            const [id, setId] = useState('');
+            useEffect(
+                () => {
+                    fetch(poke.url)
+                        .then(res => res.json())
+                        .then(res => {
+                            res.sprites.front_default
+                            setImg(res.sprites.front_default);
+                            setId(res.id);
+                        });
+                }
+            );
+
+            return (
+                <div className="poke">
+                    <img src={img} />
+
+                    <div>
+                        <h3> No. {id}<br /></h3>
+                        <h4> pokename : {poke.name}<br /> </h4>
+                    </div>
+                </div>
+            );
+        }
+
+        function PokeList() {
+
+            const [pokemons, setPokemons] = useState([]);
+            const [btn, setBtn] = useState({});
+
+            useEffect(
+                () => {
+                    fetch(`https://pokeapi.co/api/v2/pokemon/`)
+                        .then(response => response.json())
+                        .then(responsePokemons => {
+                            setPokemons(responsePokemons.results);
+                            setBtn(responsePokemons);
+                        });
+                },
+                []
+            );
+
+            console.log(pokemons);
+
+            return (
+                <>
+                <button
+                    onClick={() => {
+                        fetch(btn.previous)
+                            .then(response => response.json())
+                            .then(responsePokemons => {
+                                setPokemons(responsePokemons.results);
+                                setBtn(responsePokemons);
+                            });
+                    }}
+                >
+                    뒤로
+                </button>
+                    <button
+                        onClick={() => {
+                            fetch(btn.next)
+                                .then(response => response.json())
+                                .then(responsePokemons => {
+                                    setPokemons(responsePokemons.results);
+                                    setBtn(responsePokemons);
+                                });
+                        }}
+                    >
+                        다음
+                    </button>
+                    <div>
+                        {pokemons.map(pokemon => <Item poke={pokemon} key={pokemon.name} />)}
+                    </div>
+                </>
+            );
+        }
+
+        function Title() {
+
+            return <h1>포켓몬 목록</h1>;
+        }
+
+        function App() {
+
+            return (
+                <>
+                    <Title />
+                    <PokeList />
+                </>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+
+</html>
